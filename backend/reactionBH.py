@@ -14,20 +14,44 @@ class BZreaction:
     # --------------------------------------------------------------------------
     #                            Constructor
     # --------------------------------------------------------------------------
-    def __init__(self):
+    def __init__(N=None, delta=None, t=None, ):
 
+        # depracate variable settings
+        # constants
+        self.N = N if N is not None else __import__('variableSettingsBH.py').N
+        self.delta = delta if delta is not None else __import__('variableSettingsBH.py').delta
+        self.t = t if t is not None else __import__('variableSettingsBH.py').t
+        self.T = T if T is not None else __import__('variableSettingsBH.py').T
+        self.f = f if f is not None else __import__('variableSettingsBH.py').f
+        self.q = q if q is not None else __import__('variableSettingsBH.py').q
+        self.e1 = e1 if e1 is not None else __import__('variableSettingsBH.py').e1
+        self.uExcited = uExcited if uExcited is not None else __import__('variableSettingsBH.py').uExcited
+        self.Du = Du if Du is not None else __import__('variableSettingsBH.py').Du
+        self.Dv = Dv if Dv is not None else __import__('variableSettingsBH.py').Dv
+        self.m = m if m is not None else __import__('variableSettingsBH.py').m
+        self.phi = phi if phi is not None else __import__('variableSettingsBH.py').phi
+
+        # computed
+        self.Dw = self.Du
+        self.L = int(self.N/2)
+        self.dt = self.L**2/(5*(self.N-1)**2) # Time step 0.05
+        self.h = self.L / (self.N - 1)
+        self.D = self.dt / self.h**2 # Diffusion Constant
+        self.e2 = e1/500
+        self.r = self.N // 4
+        
         # Define initial parameters
 
         self.t = 0.1
-        self.u = np.zeros((vS.N + 1, vS.N + 1), float)
-        self.v = np.zeros((vS.N + 1, vS.N + 1), float)
-        self.phi = np.zeros((vS.N + 1, vS.N + 1), float)
-        self.lap = np.zeros((2, vS.N + 2, vS.N + 2), float)
-        self.dudDu = np.zeros((2, vS.N + 2, vS.N + 2), float) # For variable diffusion correction term
-        self.obstacles = np.full((vS.N + 1, vS.N + 1), False)
+        self.u = np.zeros((self.N + 1, self.N + 1), float)
+        self.v = np.zeros((self.N + 1, self.N + 1), float)
+        self.phi = np.zeros((self.N + 1, self.N + 1), float)
+        self.lap = np.zeros((2, self.N + 2, self.N + 2), float)
+        self.dudDu = np.zeros((2, self.N + 2, self.N + 2), float) # For variable diffusion correction term
+        self.obstacles = np.full((self.N + 1, self.N + 1), False)
         self.k = 0
         self.kprm = 1
-        self.Du = np.zeros((vS.N + 1, vS.N + 1), float)
+        self.Du = np.zeros((self.N + 1, self.N + 1), float)
         #self.obstacleMode = 0  # No obstacle
         self.obstacleMode = 1  # Light Diode
         #self.sourceMode = 0  # Line wave
@@ -58,8 +82,8 @@ class BZreaction:
         self.t = 0.1
 
         # reset arrays
-        for i in range(vS.N + 1):
-            for j in range(vS.N + 1):
+        for i in range(self.N + 1):
+            for j in range(self.N + 1):
                 self.u[i, j] = 0.0
                 self.v[i, j] = 0.0
 
@@ -83,7 +107,7 @@ class BZreaction:
     def initWaveFront(self):
 
         if self.sourceMode == 0: # Line source
-            for i in range(1, vS.N + 1):
+            for i in range(1, self.N + 1):
                 self.u[i, 1] = vS.uExcited
                 self.v[i, 1] = 0.0
         elif self.sourceMode == 1: # Point source
@@ -110,16 +134,16 @@ class BZreaction:
         #   ---------------------------------------------
 
         if self.obstacleMode == 0: # Uniform Diffusion
-            for i in range(vS.N + 1):
-                for j in range(vS.N + 1):
+            for i in range(self.N + 1):
+                for j in range(self.N + 1):
                     self.obstacles[i, j] = True
                     self.Du[i, j] = vS.Du * vS.D
                     self.phi[i, j] = 0.0
 
 
         elif self.obstacleMode == 1: # Light Diode
-            for i in range(vS.N + 1):
-                for j in range(vS.N + 1):
+            for i in range(self.N + 1):
+                for j in range(self.N + 1):
 
                     d = sqrt((i - vS.L) ** 2 + (j - vS.L) ** 2)
 
@@ -132,8 +156,8 @@ class BZreaction:
                     self.Du[i, j] = vS.Du * vS.D
 
         else: # Gravtiataional Well Obstacle
-            for i in range(vS.N + 1):
-                for j in range(vS.N + 1):
+            for i in range(self.N + 1):
+                for j in range(self.N + 1):
                     self.phi[i, j] = 0.0
 
                     d = sqrt((i - vS.L) ** 2 + (j - vS.L) ** 2)
@@ -192,8 +216,8 @@ class BZreaction:
         self.k = ktmp
 
         # main loop
-        for i in range(1, vS.N + 1):
-            for j in range(1, vS.N + 1):
+        for i in range(1, self.N + 1):
+            for j in range(1, self.N + 1):
 
                 if self.u[i, j] < vS.delta:
                     self.u[i, j] = self.Du[i, j] * self.lap[self.k, i, j] / 6 
@@ -229,24 +253,24 @@ class BZreaction:
 
 
         # Variable Diffusion term
-        for i in range(1, vS.N):
-            for j in range(1, vS.N):
+        for i in range(1, self.N):
+            for j in range(1, self.N):
                 self.dudDu[self.kprm, i, j] += 0.25*(self.u[i-1,j] - self.u[i+1,j]) * (self.Du[i-1,j] - self.Du[i+1,j])
                 self.dudDu[self.kprm, i, j] += 0.25*(self.u[i,j-1] - self.u[i,j+1]) * (self.Du[i,j-1] - self.Du[i,j+1])
 
         # impose no-flux boundary conditions
-        for i in range(1, vS.N + 1):
+        for i in range(1, self.N + 1):
             #           Laplacian
             self.lap[self.kprm, i, 1] += 6 * self.u[i, 2]
             self.lap[self.kprm, 1, i] += 6 * self.u[2, i]
-            self.lap[self.kprm, i, vS.N] += 6 * self.u[i, vS.N - 1]
-            self.lap[self.kprm, vS.N, i] += 6 * self.u[vS.N - 1, i]
+            self.lap[self.kprm, i, self.N] += 6 * self.u[i, self.N - 1]
+            self.lap[self.kprm, self.N, i] += 6 * self.u[self.N - 1, i]
 
             #        Variable Diffusion Term
             self.dudDu[self.kprm, i, 1] += 0
             self.dudDu[self.kprm, 1, i] += 0
-            self.dudDu[self.kprm, i, vS.N] += 0
-            self.dudDu[self.kprm, vS.N, i] += 0
+            self.dudDu[self.kprm, i, self.N] += 0
+            self.dudDu[self.kprm, self.N, i] += 0
 
 
         return
@@ -281,12 +305,12 @@ class BZreaction:
         looking = True
         while looking:  # update until wave reaches the end of the reaction space
             for i in range(0, vS.L):
-                if self.u[i, vS.N - 1] > 0.6:
+                if self.u[i, self.N - 1] > 0.6:
                     looking = False
             self.step()
             wee += 1
 
-            if wee > 20 * vS.N:  # If there is no wave
+            if wee > 20 * self.N:  # If there is no wave
                 print('Took too long! mass =', vS.m)
                 break
 
