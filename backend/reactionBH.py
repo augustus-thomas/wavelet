@@ -219,7 +219,7 @@ class BZreaction:
         for i in range(1, self.N + 1):
             for j in range(1, self.N + 1):
 
-                if self.u[i, j] < vS.delta:
+                if self.u[i, j] < self.delta:
                     self.u[i, j] = self.Du[i, j] * self.lap[self.k, i, j] / 6 
                     self.v[i, j] = (1 - vS.dt) * self.v[i, j]
                 else:
