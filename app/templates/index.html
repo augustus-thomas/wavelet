@@ -1,12 +1,89 @@
 <!DOCTYPE html>
 <html>
-<head>
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>wavelet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: blue;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            flex-direction: row;
+        }
+        .inputs {
+            flex: 1;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .image-container {
+            flex: 2;
+            padding: 20px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <img src="{{ url_for('static', filename='2024-04-02BHWithLegend.png') }}" class="image" />
-     <video width="500" height="100"controls>
-        <source src="{{ url_for('static', filename='simulation_movie2.mp4') }}" type="video/mp4">
-    </video> 
+    <div class="header">
+        <h1>Wavelet</h1>
+    </div>
+    <div class="container">
+        <div class="inputs">
+            <label for="input1">Input 1:</label>
+            <input type="text" id="input1" name="input1" step="any"><br><br>
+            <label for="input2">Input 2:</label>
+            <input type="text" id="input2" name="input2" step="any"><br><br>
+        <form id="script-form">
+        <button type="submit" id="script-form">Start Simulation</button>
+        </form>
+            <br><br>
+        </div>
+        <div class="image-container">
+            <img id='loading-gif' src="{{ url_for('static', filename='loading.gif') }}" style="display: none;">
+            <video id="sim-video" controls style="display: none;"></video>
+        </div>
+    </div>
+    <script>
+    $(document).ready(function() {
+        $('#script-form').submit(function(event) {
+            event.preventDefault();
+            $('#loading-gif').show();
+            var args = {
+                'input1': $('#input1').val(),
+                'input2': $('#input2').val(),
+            };
+            $.ajax({
+                type: 'POST',
+                url: '/start_sim',
+                contentType: 'application/json',
+                data: JSON.stringify(args),
+                success: function(response) {
+                    $("#loading-gif").hide();
+                    $("#sim-video").attr('src', response.sim_url)
+                    alert(response.message);
+                },
+                error: function(xhr, status, error) {
+                    alert('Error occurred while running the script.');
+                    $('#loading-gif').hide();
+                }
+            });
+        });
+    });
+</script>
+
 </body>
 </html>
