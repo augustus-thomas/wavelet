@@ -43,10 +43,33 @@
     </div>
     <div class="container">
         <div class="inputs">
-            <label for="input1">Input 1:</label>
+            <label for="input1">f</label>
             <input type="text" id="input1" name="input1" step="any"><br><br>
-            <label for="input2">Input 2:</label>
+
+            <label for="input2">q</label>
             <input type="text" id="input2" name="input2" step="any"><br><br>
+
+            <label for="input3">e1</label>
+            <input type="text" id="input3" name="input3" step="any"><br><br>
+
+            <label for="input4">e2</label>
+            <input type="text" id="input4" name="input4" step="any"><br><br>
+
+            <label for="input5">activator</label>
+            <input type="text" id="input5" name="input5" step="any"><br><br>
+
+            <label for="input6">u diffusion</label>
+            <input type="text" id="input6" name="input6" step="any"><br><br>
+
+            <label for="input7">v diffusion</label>
+            <input type="text" id="input7" name="input7" step="any"><br><br>
+
+            <label for="input8">phi</label>
+            <input type="text" id="input8" name="input8" step="any"><br><br>
+
+            <label for="input9">steps</label>
+            <input type="text" id="input9" name="input9" step="any"><br><br>
+
         <form id="script-form">
         <button type="submit" id="script-form">Start Simulation</button>
         </form>
@@ -63,8 +86,15 @@
             event.preventDefault();
             $('#loading-gif').show();
             var args = {
-                'input1': $('#input1').val(),
-                'input2': $('#input2').val(),
+                'f': $('#input1').val(),
+                'q': $('#input2').val(),
+                'e1': $('#input3').val(),
+                'e2': $('#input4').val(),
+                'uExcited': $('#input5').val(),
+                'Du': $('#input6').val(),
+                'Dv': $('#input7').val(),
+                'phi': $('#input8').val(),
+                'steps': $('#input9').val()
             };
             $.ajax({
                 type: 'POST',
@@ -73,7 +103,8 @@
                 data: JSON.stringify(args),
                 success: function(response) {
                     $("#loading-gif").hide();
-                    $("#sim-video").attr('src', response.sim_url)
+                    $("#sim-video").attr('src', '/sim.mp4');
+                    $("#sim-video").show();
                     alert(response.message);
                 },
                 error: function(xhr, status, error) {

@@ -6,14 +6,19 @@
 # Feb. 27th 2023
 
 # Simulation parameters
+# constants
+
+def __init__():
+	pass
 N = 150 # Grid size, originally 81
-L = int(N/2)
-dt = L**2/(5*(N-1)**2) # Time step 0.05
 delta = 0.1 # Boundary layer # 1e-4 originally
-h = L / (N - 1)
-D = dt / h**2 # Diffusion Constant
 t = 0 # time, must start with this value
 T = 30 # frame rate
+# computed
+L = int(N/2)
+dt = L**2/(5*(N-1)**2) # Time step 0.05
+h = L / (N - 1)
+D = dt / h**2 # Diffusion Constant
 
 # Chemical parameters
 f = 2.5 # 3.0

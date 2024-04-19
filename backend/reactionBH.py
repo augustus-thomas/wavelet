@@ -4,9 +4,8 @@
 # The College of Wooster
 #
 # Feb. 27th 2023
-
 import numpy as np
-import variableSettingsBH as vS
+import backend.variableSettingsBH as vS
 from math import sqrt, tan, atan, acos
 
 
@@ -14,32 +13,34 @@ class BZreaction:
     # --------------------------------------------------------------------------
     #                            Constructor
     # --------------------------------------------------------------------------
-    def __init__(N=None, delta=None, t=None, ):
+    def __init__(self, N=None, delta=None, t=None, T=None, f=None, q=None, e1=None, \
+        e2=None, uExcited=None, Du_c = None, Dv = None, m = None, phi_c = None):
 
         # depracate variable settings
         # constants
-        self.N = N if N is not None else __import__('variableSettingsBH.py').N
-        self.delta = delta if delta is not None else __import__('variableSettingsBH.py').delta
-        self.t = t if t is not None else __import__('variableSettingsBH.py').t
-        self.T = T if T is not None else __import__('variableSettingsBH.py').T
-        self.f = f if f is not None else __import__('variableSettingsBH.py').f
-        self.q = q if q is not None else __import__('variableSettingsBH.py').q
-        self.e1 = e1 if e1 is not None else __import__('variableSettingsBH.py').e1
-        self.uExcited = uExcited if uExcited is not None else __import__('variableSettingsBH.py').uExcited
+        self.N = float(N) if N is not None else vS.N
+        self.delta = float(delta) if delta is not None else vS.delta
+        self.t = float(t) if t is not None else vS.t
+        self.T = float(T) if T is not None else vS.T
+        self.f = float(f) if f is not None else vS.f #!
+        self.q = float(q) if q is not None else vS.q #!
+        self.e1 = float(e1) if e1 is not None else vS.e1 #!
+        self.e2 = float(e2) if e2 is not None else vS.e2 #!
+        self.uExcited = float(uExcited) if uExcited is not None else vS.uExcited #!
         # scalar not matrix!!
-        self.Du_c = Du if Du is not None else __import__('variableSettingsBH.py').Du
-        self.Dv = Dv if Dv is not None else __import__('variableSettingsBH.py').Dv
-        self.m = m if m is not None else __import__('variableSettingsBH.py').m
+        self.Du_c = float(Du_c) if Du_c is not None else vS.Du #!
+        self.Dv = float(Dv) if Dv is not None else vS.Dv #!
+        self.m = float(m) if m is not None else vS.m
         # constant not a matrix!!
-        self.phi_c = phi if phi is not None else __import__('variableSettingsBH.py').phi
+        self.phi_c = float(phi_c) if phi_c is not None else vS.phi #!
 
         # computed
-        self.Dw = self.Du
+        self.Dw = self.Du_c
         self.L = int(self.N/2)
         self.dt = self.L**2/(5*(self.N-1)**2) # Time step 0.05
         self.h = self.L / (self.N - 1)
         self.D = self.dt / self.h**2 # Diffusion Constant
-        self.e2 = e1/500
+        self.e2 = self.e1/500
         self.r = self.N // 4
         
         # Define initial parameters
@@ -114,14 +115,10 @@ class BZreaction:
                 self.v[i, 1] = 0.0
         elif self.sourceMode == 1: # Point source
             if self.obstacleMode == 1:
-                self.u[vS.L, vS.L] = self.uExcited
-                self.v[vS.L, 1] = 0.0
+                self.u[self.L, self.L] = self.uExcited
+                self.v[self.L, 1] = 0.0
         elif self.sourceMode == 2: # Inverted circle
-            
-        else:
-            self.u[vS.L, 1] = self.uExcited
-            self.v[vS.L, 1] = 0.0
-            
+            pass
         else:
             print("Error selecting the source in initWaveFront()")
 
@@ -139,7 +136,7 @@ class BZreaction:
             for i in range(self.N + 1):
                 for j in range(self.N + 1):
                     self.obstacles[i, j] = True
-                    self.Du[i, j] = self.Du_c * vS.D
+                    self.Du[i, j] = self.Du_c * self.D
                     self.phi[i, j] = 0.0
 
 
@@ -147,27 +144,27 @@ class BZreaction:
             for i in range(self.N + 1):
                 for j in range(self.N + 1):
 
-                    d = sqrt((i - vS.L) ** 2 + (j - vS.L) ** 2)
+                    d = sqrt((i - self.L) ** 2 + (j - self.L) ** 2)
 
-                    if vS.r <= d:
+                    if self.r <= d:
                         self.phi[i, j] = 0
                     else:
-                        self.phi[i, j] = self.phi_c * d / vS.r
+                        self.phi[i, j] = self.phi_c * d / self.r
 
                     self.obstacles[i, j] = True
-                    self.Du[i, j] = self.Du_c * vS.D
+                    self.Du[i, j] = self.Du_c * self.D
 
         else: # Gravtiataional Well Obstacle
             for i in range(self.N + 1):
                 for j in range(self.N + 1):
                     self.phi[i, j] = 0.0
 
-                    d = sqrt((i - vS.L) ** 2 + (j - vS.L) ** 2)
+                    d = sqrt((i - self.L) ** 2 + (j - self.L) ** 2)
 
                     if self.rs >= d:
                         self.Du[i, j] = 0
                     else:
-                        self.Du[i, j] = vS.D * (1 - 2 * self.rs / d)
+                        self.Du[i, j] = self.D * (1 - 2 * self.rs / d)
         return
 
     def setObstacle(self, i):
@@ -223,7 +220,7 @@ class BZreaction:
 
                 if self.u[i, j] < self.delta:
                     self.u[i, j] = self.Du[i, j] * self.lap[self.k, i, j] / 6 
-                    self.v[i, j] = (1 - vS.dt) * self.v[i, j]
+                    self.v[i, j] = (1 - self.dt) * self.v[i, j]
                 else:
 
                     F_u = self.u[i,j] * (1.0 - self.u[i,j]) - (self.f * self.v[i,j] + self.phi[i,j]) * ((self.u[i,j]-self.q) / (self.u[i,j] + self.q))
@@ -232,10 +229,10 @@ class BZreaction:
                     
                     # Update activator
                     # W. Jahnke, W. Skaggs, A. Winfree, J. Phys. Chem. 93 (2) (1989) 740–749.
-                    self.u[i, j] = max(self.u[i,j] + du_dt * vS.dt, self.q)
+                    self.u[i, j] = max(self.u[i,j] + du_dt * self.dt, self.q)
 
                     # Update inhibitor
-                    self.v[i, j] += vS.dt * (self.u[i, j] - self.v[i, j])
+                    self.v[i, j] += self.dt * (self.u[i, j] - self.v[i, j])
 
                     #           Finite difference Laplacian
                     self.lap[self.kprm, i, j] -= 24 * self.u[i, j]
@@ -289,7 +286,7 @@ class BZreaction:
             #return (self.u/np.max(self.u)) + self.v
             return (self.u/self.uExcited) + 0.2 * self.phi / self.phi_c + self.v
         else: # Obstacle is present
-            return (self.u/np.max(self.u)) + 0.5 * (self.Du / vS.D)
+            return (self.u/np.max(self.u)) + 0.5 * (self.Du / self.D)
 
     # --------------------------------------------------------------------------
     #                               Experiments
@@ -306,7 +303,7 @@ class BZreaction:
         wee = 0
         looking = True
         while looking:  # update until wave reaches the end of the reaction space
-            for i in range(0, vS.L):
+            for i in range(0, self.L):
                 if self.u[i, self.N - 1] > 0.6:
                     looking = False
             self.step()
