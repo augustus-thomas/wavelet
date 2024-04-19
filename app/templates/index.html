@@ -1,20 +1,24 @@
 <!DOCTYPE html>
+<!-- HTML after all -->
 <html>
 <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>wavelet</title>
     <style>
+         /* Set nice readable font */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
         }
+        /* For Wavelet banner */
         .header {
             background-color: blue;
             color: white;
             padding: 20px;
             text-align: center;
         }
+        /* Properly align input with image viewer */
         .container {
             display: flex;
             flex-direction: row;
@@ -35,6 +39,7 @@
             margin: 0 auto;
         }
     </style>
+    <!-- we need jQuery for AJAX -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
@@ -43,6 +48,7 @@
     </div>
     <div class="container">
         <div class="inputs">
+            <!-- simulation input handled here -->
             <label for="input1">f</label>
             <input type="text" id="input1" name="input1" step="any"><br><br>
 
@@ -71,13 +77,14 @@
             <input type="text" id="input9" name="input9" step="any"><br><br>
 
         <form id="script-form">
+        <!-- for starting simulation script-->
         <button type="submit" id="script-form">Start Simulation</button>
         </form>
-            <br><br>
         </div>
         <div class="image-container">
+            <!-- initially both the loading and the video are invisible-->
             <img id='loading-gif' src="{{ url_for('static', filename='loading.gif') }}" style="display: none;">
-            <video id="sim-video" controls style="display: none;"></video>
+            <video id="sim-video" type='video/mp4'controls style="display: none;"></video>
         </div>
     </div>
     <script>
@@ -103,7 +110,7 @@
                 data: JSON.stringify(args),
                 success: function(response) {
                     $("#loading-gif").hide();
-                    $("#sim-video").attr('src', '/sim.mp4');
+                    $("#sim-video").attr('src', "{{ url_for('static', filename='sim.mp4') }}");
                     $("#sim-video").show();
                     alert(response.message);
                 },
@@ -115,6 +122,5 @@
         });
     });
 </script>
-
 </body>
 </html>
